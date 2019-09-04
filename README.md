@@ -1,4 +1,4 @@
-# gostack8-desafio-modulo02
+# gostack8-desafio-modulo03
 
 ## Rotas implementadas:
 
