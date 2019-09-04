@@ -26,7 +26,7 @@ class User extends Model {
 
   static associate(models) {
     // Cria um refrencia do File no User no campo avatar_id
-    //this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
+    this.belongsTo(models.File, { foreignKey: '_id', as: 'avatar' });
   }
 
   checkPassword(password) {
