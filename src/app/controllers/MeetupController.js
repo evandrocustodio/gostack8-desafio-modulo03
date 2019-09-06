@@ -51,20 +51,7 @@ class MeetupController {
   }
 
   async update(req, res) {
-    const schema = Yup.object().shape({
-      title: Yup.string().required(),
-      description: Yup.string().required(),
-      localization: Yup.string().required(),
-      date: Yup.string().required(),
-    });
-
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails !!!' });
-    }
-
-    if (isBefore(parseISO(req.body.date), new Date())) {
-      return res.status(400).json({ error: 'Verify meetup date !!!' });
-    }
+    const { title, date } = req.body;
     const _id = req.params.id;
 
     const meetup = await Meetup.findOne({
@@ -75,18 +62,26 @@ class MeetupController {
       return res.status(403).json({ error: `You can't update this Meetup.` });
     }
 
+    if (date) {
+      if (isBefore(parseISO(date), new Date())) {
+        return res.status(400).json({ error: 'Verify meetup date !!!' });
+      }
+    }
+
     if (isBefore(meetup.date, new Date())) {
       return res
         .status(403)
         .json({ error: `You can't update this Meetup. It's was finished.` });
     }
 
-    const meetupTitleExists = await Meetup.findOne({
-      where: { title: req.body.title },
-    });
+    if (title) {
+      const meetupTitleExists = await Meetup.findOne({
+        where: { title: req.body.title },
+      });
 
-    if (meetupTitleExists && isAfter(meetup.date, new Date())) {
-      return res.status(401).json({ error: 'Meetup already exists.' });
+      if (meetupTitleExists && isAfter(meetup.date, new Date())) {
+        return res.status(401).json({ error: 'Meetup already exists.' });
+      }
     }
 
     const meetupToUpdate = { ...req.body, user_id: req.userId };
