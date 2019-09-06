@@ -51,7 +51,6 @@ class MeetupController {
   }
 
   async update(req, res) {
-    const { title, date } = req.body;
     const _id = req.params.id;
 
     const meetup = await Meetup.findOne({
@@ -62,8 +61,8 @@ class MeetupController {
       return res.status(403).json({ error: `You can't update this Meetup.` });
     }
 
-    if (date) {
-      if (isBefore(parseISO(date), new Date())) {
+    if (req.body.date) {
+      if (isBefore(parseISO(req.body.date), new Date())) {
         return res.status(400).json({ error: 'Verify meetup date !!!' });
       }
     }
@@ -74,7 +73,7 @@ class MeetupController {
         .json({ error: `You can't update this Meetup. It's was finished.` });
     }
 
-    if (title) {
+    if (req.body.title) {
       const meetupTitleExists = await Meetup.findOne({
         where: { title: req.body.title },
       });
@@ -86,8 +85,19 @@ class MeetupController {
 
     const meetupToUpdate = { ...req.body, user_id: req.userId };
 
-    await meetup.update(meetupToUpdate);
-    return res.status(200).json({ message: 'Meetup was updated.' });
+    const meetupToUpdated = await meetup.update(meetupToUpdate);
+
+    const { id, title, description, date, localization } = meetupToUpdated;
+
+    return res.status(201).json({
+      meetup: {
+        id,
+        title,
+        description,
+        localization,
+        date,
+      },
+    });
   }
 
   async delete(req, res) {

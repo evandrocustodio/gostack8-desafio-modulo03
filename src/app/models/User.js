@@ -1,5 +1,6 @@
 import Sequelize, { Model } from 'sequelize';
 import bcrypt from 'bcrypt';
+import Meetup from './Meetup';
 
 class User extends Model {
   static init(sequelize) {
