@@ -22,6 +22,8 @@ router.get('/meetups', autorize, MeetupController.index);
 
 router.post('/meetups', autorize, MeetupController.store);
 
+router.put('/meetups/:id', autorize, MeetupController.update);
+
 router.delete('/meetups/:id', autorize, MeetupController.delete);
 
 export default router;
