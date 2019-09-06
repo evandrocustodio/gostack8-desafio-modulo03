@@ -11,3 +11,4 @@
 | `http://localhost:3000/meetups`      | GET    | Criar Meetup              |
 | `http://localhost:3000/meetups`      | POST   | Listar Meetups do Usuário |
 | `http://localhost:3000/meetups/:id`  | DELETE | Deletar Meetup            |
+| `http://localhost:3000/meetups/:id`  | PUT    | Atualizar Meetup          |
