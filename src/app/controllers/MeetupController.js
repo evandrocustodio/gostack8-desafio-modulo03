@@ -34,20 +34,22 @@ class MeetupController {
     const meetupToAdd = { ...req.body, user_id: req.userId };
 
     const meetupAdded = await Meetup.create(meetupToAdd).catch(e => {
-      return res.status(401).json({ error: `${e.original.detail}` });
+      return res.status(401).json({ error: `${e}` });
     });
 
-    const { id, title, description, date, localization } = meetupAdded;
+    if (meetupAdded) {
+      const { id, title, description, date, localization } = meetupAdded;
 
-    return res.status(201).json({
-      meetup: {
-        id,
-        title,
-        description,
-        localization,
-        date,
-      },
-    });
+      return res.status(201).json({
+        meetup: {
+          id,
+          title,
+          description,
+          localization,
+          date,
+        },
+      });
+    }
   }
 
   async update(req, res) {

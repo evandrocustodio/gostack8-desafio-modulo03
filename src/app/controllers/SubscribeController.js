@@ -22,7 +22,7 @@ class SubscribeController {
 
   async store(req, res) {
     const { userId } = req;
-    const { id: meetupId } = req.params.id;
+    const meetupId = req.params.id;
 
     const meetup = await Meetup.findByPk(meetupId);
 
@@ -30,28 +30,59 @@ class SubscribeController {
       return res.status(401).json({ error: `Meetup doesn't exists.` });
     }
 
-    if ((isBefore(meetup.date), new Date())) {
+    if (isBefore(meetup.date, new Date())) {
       return res.status(400).json({ error: `This meetup was finished !!!` });
     }
 
-    //Configura o usuário criador do Meetup
-    const meetupToAdd = { ...req.body, user_id: req.userId };
+    if (meetup.user_id === userId) {
+      return res
+        .status(400)
+        .json({ error: `You can't subscribe to your owner meetup !!!` });
+    }
 
-    const meetupAdded = await Meetup.create(meetupToAdd).catch(e => {
+    const subscribe = await Subscribe.findOne({
+      where: {
+        user_id: userId,
+        meetup_id: meetupId,
+      },
+    });
+
+    if (subscribe) {
+      return res
+        .status(400)
+        .json({ error: `You already subscribe to this meetup !!!` });
+    }
+
+    const subscribeSameDate = await Subscribe.findOne({
+      where: {
+        user_id: userId,
+      },
+      include: [
+        {
+          model: Meetup,
+          as: 'meetup',
+          required: true,
+          where: {
+            date: meetup.date,
+          },
+        },
+      ],
+    });
+
+    if (subscribeSameDate) {
+      return res
+        .status(400)
+        .json({ error: "Can't subscribe to two meetups at the same date" });
+    }
+
+    const subscribed = await Subscribe.create({
+      user_id: userId,
+      meetup_id: meetupId,
+    }).catch(e => {
       return res.status(401).json({ error: `${e.original.detail}` });
     });
 
-    const { id, title, description, date, localization } = meetupAdded;
-
-    return res.status(201).json({
-      meetup: {
-        id,
-        title,
-        description,
-        localization,
-        date,
-      },
-    });
+    return res.json(subscribed);
   }
 }
 
