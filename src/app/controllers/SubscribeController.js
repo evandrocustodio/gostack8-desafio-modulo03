@@ -1,6 +1,9 @@
 import Meetup from '../models/Meetup';
-import { isBefore } from 'date-fns';
+import { format, isBefore } from 'date-fns';
+import pt from 'date-fns/locale/pt-BR';
 import Subscribe from '../models/Subscribe';
+import Mail from '../../lib/Mail';
+import User from '../models/User';
 
 class SubscribeController {
   async index(req, res) {
@@ -82,7 +85,43 @@ class SubscribeController {
       return res.status(401).json({ error: `${e.original.detail}` });
     });
 
-    return res.json(subscribed);
+    const subs = await Subscribe.findByPk(subscribed.id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name', 'email'],
+        },
+        {
+          model: Meetup,
+          as: 'meetup',
+          attributes: ['title', 'description', 'date'],
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['name', 'email'],
+            },
+          ],
+        },
+      ],
+    });
+
+    await Mail.sendMail({
+      to: `${subs.user.name} <${subs.user.email}>`,
+      subject: 'Nova Inscrição',
+      template: 'subscription',
+      context: {
+        username: subs.meetup.user.name,
+        name: subs.meetup.title,
+        description: subs.meetup.description,
+        user: subs.user.name,
+        date: format(subs.meetup.date, "'dia ' dd 'de' MMMM", {
+          locale: pt,
+        }),
+      },
+    });
+    return res.json(subs);
   }
 }
 
