@@ -1,4 +1,5 @@
 import Meetup from '../models/Meetup';
+import { Op } from 'sequelize';
 import { format, isBefore } from 'date-fns';
 import pt from 'date-fns/locale/pt-BR';
 import Subscribe from '../models/Subscribe';
@@ -15,6 +16,12 @@ class SubscribeController {
           model: Meetup,
           as: 'meetup',
           attributes: ['title', 'date'],
+          where: {
+            date: {
+              [Op.gt]: new Date(),
+            },
+          },
+          required: true,
         },
       ],
       order: [['meetup', 'date']],
